@@ -679,3 +679,34 @@ code[class*="language-"], pre[class*="language-"] {
 .greenseatext span {
     color: #00b784 !important;
 }
+
+.dockerBackground {
+    background-color:#10151B !important    ;
+
+}
+
+.cursorBackground {
+    background-color: #191919 !important    ;
+
+}
+
+.claudeBackground {
+    background-color: #262624 !important    ;
+
+}
+
+.obsdianBackground {
+    background-color: #1E1E1E !important    ;
+}
+
+.llstudioBackground {
+    background-color: #12191E !important    ;
+}
+
+.visualstudioBackground {
+    background-color: #0D0D1B !important    ;
+}
+
+.githubBackground {
+    background-color: #212830 !important    ;
+}
