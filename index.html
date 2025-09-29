@@ -146,6 +146,23 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
+           <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/02.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Dlaczego MCP to rewoulcja</li>
+                    <ol class="nonumbers">
+                        <li class="next">Jest to ustalony standard	&nbsp;	&nbsp;	&nbsp;</li>
+                        <li class="next">Nie jest to jakieś kolejne API, Funkcja udostępniona przez coś co nie jest do końca akceptowane przez wszystkich</li>
+                        <li class="next">jak np. Semantic Kernel  firmy Microsoft</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
         <section class="slide" style="background-color:#10151B">
         <figure>
             <img class="cover" src="pictures/slides/6.png" alt="blog">
@@ -176,6 +193,24 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
+                <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Są już programy do testowania swoich MCP
+        </span></span>
+    </section>   
+                <section class="slide" style="background-color:#10151B">
+        <figure>
+            <img class="cover" src="pictures/programs/MCP Inspector.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>MCP może być konteneryzowane
+        </span></span>
+    </section>  
+                        <section class="slide creamGGGragientReverse  orangetext">
+        <span class="shout colors" ><span>Zobaczmy skalę rozwiązania MCP<br /> 😲
+        </span></span>
+    </section>  
        <section class="slide conicG  greenseatext">
         <span class="shout colors" ><span>Użyjmy wbudowanych MCP?<br />😎
         </span></span>
@@ -188,7 +223,7 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
         <span class="shout colors" style="position: absolute;  top:  85%;" ><span>Docker i MCP Toolkit
         </span></span>
     </section>
-    <section class="slide creamGGGragient  orangetext">
+    <section class="slide creamGGGragientReverse  orangetext">
         <span class="shout colors" ><span>Zobaczmy jakie MCP oferuje Docker?<br />🤔
         </span></span>
     </section>   
@@ -198,6 +233,10 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Jakie mamy gotowe MCP
+        </span></span>
+    </section>   
         <section class="slide" style="background-color:#10151B">
         <figure>
             <img class="cover" src="pictures/mcp/tools-01.png" alt="blog">
@@ -807,9 +846,21 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
         <span class="shout colors" style="position: absolute;  top:  85%;" ><span>VS Code i .Continue
         </span></span>
     </section>
+        <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/mcp/continue-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
                                         <section class="slide creamGGGragient  orangetext">
         <span class="shout colors" ><span>Jak dodać do niego Docker MCP w YAML
         </span></span>
+    </section>
+            <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/mcp/continue-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
     </section>
     <section class="slide visualstudioBackground" style="background-color:black">
         <figure>
@@ -817,12 +868,71 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
-    <section class="slide visualstudioBackground" style="background-color:black">
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">YAML </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 25px;overflow: hidden;  " class="language-yaml">
+                    <code style="line-height: 25px !important;">
+
+
+                        name: Docker Obsidian MCP Server
+                        version: 0.0.1
+                        schema: v1
+
+                        mcpServers:
+                        - name: obsidian
+                            command: docker
+                            args:
+                            - run
+                            - -i
+                            - --rm
+                            - -e
+                            - OBSIDIAN_HOST
+                            - -e
+                            - OBSIDIAN_API_KEY
+                            - mcp/obsidian
+                            env:
+                            OBSIDIAN_HOST: host.docker.internal
+                            OBSIDIAN_API_KEY: "your_api_key_here"
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section> 
+    <section class="slide visualstudioBackground" >
         <figure>
             <img class="cover" src="pictures/mcp/MCP-67.png" alt="blog">
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
+                <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">YAML </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 30px;overflow: hidden;  " class="language-yaml">
+                    <code style="line-height: 30px !important;">
+                        name: YouTube Transcript MCP Server
+                        version: 0.0.1
+                        schema: v1
+
+                        mcpServers:
+                        - name: youtube_transcript
+                            command: docker
+                            args :
+                            - run
+                            - -i
+                            - --rm
+                            - mcp/youtube-transcript
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section> 
                                             <section class="slide creamGGGragient  orangetext">
         <span class="shout colors" ><span>Szybki test
         </span></span>
@@ -833,6 +943,10 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             <figcaption class="white">CW</figcaption>
         </figure>
     </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Visual Studio Code też ma swoje MCP
+        </span></span>
+    </section> 
                            <section class="slide gradientorangeblackpurple" style="background-color:black">
         <figure>
             <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/_Visual Studio MCP.png" alt="blog">
@@ -1019,120 +1133,45 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
         <span class="shout colors" ><span>Napiszmy swój serwer MCP<br />💻
         </span></span>
     </section> 
-                                            <section class="slide creamGGGragient  orangetext">
+    <section class="slide creamGGGragient  orangetext">
         <span class="shout colors" ><span>Tylko co się nauczyliśmy patrząc na gotowe MCP?<br/> 🤔
         </span></span>
-    </section>  
-    <!-- <section class="slide prism over bhgry">
-        <div class="grid-container">
-            <div class="HeaderTitle GG"> 
-                <h2 class="headerCODE GG">Windows Service in Python</h2>
-            </div>
-            <div class="PlaceCodeHere canscroll">
-                <pre style="font-size: 23px;overflow: hidden;  " class="language-python">
-                    <code style="line-height: 23px !important;">
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                        import os
-                        import time
-                        import servicemanager
-                        import win32service
-                        import win32serviceutil
-                        import win32event
-                        from datetime import datetime
-
-                        class HourlyFileService(win32serviceutil.ServiceFramework):
-                        _svc_name_ = &quot;HourlyFileService&quot;
-                        _svc_display_name_ = &quot;Hourly File Creation Service&quot;
-                        _svc_description_ = &quot;Tworzy nowy plik z timestampem co godzinę.&quot;
-
-                        def __init__(self, args):
-                            super().__init__(args)
-                            # Zdarzenie do obsługi zatrzymania usługi:
-                            self.stop_event = win32event.CreateEvent(None, 0, 0, None)
-                            self.running = True
-
-                        def SvcStop(self):
-                            # Wywoływane przy zatrzymaniu usługi
-                            self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
-                            self.running = False
-                            win32event.SetEvent(self.stop_event)
-
-                        def SvcDoRun(self):
-                            servicemanager.LogInfoMsg(&quot;HourlyFileService – start&quot;)
-                            # Pętla gł&#243;wna usługi
-                            while self.running:
-                                try:
-                                    # Tworzenie pliku w katalogu usługi
-                                    timestamp = datetime.now().strftime(&quot;%Y%m%d_%H%M%S&quot;)
-                                    filename = f&quot;plik_{timestamp}.txt&quot;
-                                    # np. w katalogu C:\HourlyFiles
-                                    output_dir = r&quot;C:\Notes\HourlyFiles&quot;
-                                    os.makedirs(output_dir, exist_ok=True)
-                                    full_path = os.path.join(output_dir, filename)
-                                    with open(full_path, &quot;w&quot;) as f:
-                                        f.write(f&quot;Plik utworzony: {timestamp}\n&quot;)
-                                    servicemanager.LogInfoMsg(f&quot;Utworzono plik: {full_path}&quot;)
-                                except Exception as e:
-                                    servicemanager.LogErrorMsg(f&quot;Błąd przy tworzeniu pliku: {e}&quot;)
-
-                                # Czekaj do 3600 sekund lub do sygnału zatrzymania
-                                win32event.WaitForSingleObject(self.stop_event, 3600 * 1000)
-
-                            servicemanager.LogInfoMsg(&quot;HourlyFileService – stop&quot;)
-
-                        if __name__ == &#39;__main__&#39;:
-                        win32serviceutil.HandleCommandLine(HourlyFileService)
-                    </code>
-                </pre>
-            </div>
-        </div>
     </section>
-    <section class="slide prism over bhgry">
-        <div class="grid-container">
-            <div class="HeaderTitle GG"> 
-                <h2 class="headerCODE GG">Windows Service in Python</h2>
+    <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/04.png" />
             </div>
-            <div class="PlaceCodeHere">
-                <pre style="font-size: 40px;overflow: hidden;  " class="language-cmd">
-                    <code style="line-height: 40px !important;">
-                        python HourlyFileService.py install
-
-                        python HourlyFileService.py start
-
-                        python HourlyFileService.py stop
-                        python HourlyFileService.py remove
-                    </code>
-                </pre>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Za dużo MCP to problem</li>
+                    <ol class="nonumbers">
+                        <li class="next">LLM traci dużo czasu na sprawdzeniu który MCP jest najlepszy do pracy</li>
+                        <li class="next">Idea, że wszystko ma być MCP trochę upada</li>
+                        <li class="next">Trzeba się zastanowić gdzie MCP jest najbardziej potrzebny</li>
+                    </ol>
+                </ol>
             </div>
-        </div>
-    </section>  -->
+          </div>
+    </section>
+    <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/03.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">MCP jest dla LLM, a nie dla kodu</li>
+                    <ol class="nonumbers">
+                        <li class="next">Przenoszenie gotowego REST API do MCP jest błędem</li>
+                        <li class="next">Ironia polega na tym, że MCP ma być pisane jak dla człowieka</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
+
+   
 
 
     <!-- <div class="progress"></div> -->
