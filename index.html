@@ -1170,8 +1170,1683 @@ Napiszmy serwer MCP i użyjmy go w Visual Studio Code.
             </div>
           </div>
     </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Napiszmy prosty MCP<br/> 🛠
+        </span></span>
+    </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Zacznijmy od paczki NuGet<br/> 📦
+        </span></span>
+    </section>
+        <section class="slide" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/code-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+        <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/03.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Co mają metody MCP zwracać dla typu Tool</li>
+                    <ol class="nonumbers">
+                        <li class="next">Tekst? Czyli string</li>
+                        <li class="next">Przypadku błędów jak i sukcesów JSON</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Serwer MPC można uruchomoć lokalnie jako plik exe, ale ja będę to robił w Dockerze<br/>🐳
+        </span></span>
+    </section>
+           <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Co chcemy aby nasz MCP robił?
+        </span></span>
+    </section>
+    <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/connected.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Dostajemy na przykład taką instrukcję od biznesu</li>
+                    <ol class="nonumbers">
+                        <li class="next">Chciałbym przy użyciu LLM pobierać dokumenty na podstawie PESEL albo IdPerson który wpiszę</li>
+                        <li class="next">Chciałbym analizować historię użytkowników którzy wyszukują te dokumenty</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
+        <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/contract.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Dostajemy na przykład taką instrukcję od biznesu</li>
+                    <ol class="nonumbers">
+                        <li class="next">Chciałbym też mieć możliwość zapisania tych analiz dokumentów i użytkowników jako plik Excel z wykresami</li>
+                        <li class="next">Chciałbym też mieć możliwość alternatywnie dostać ten plik Excel jako email</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
+    <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Zobaczmy jak wygląda baza danych z dokumentami<br/> 📂
+        </span></span>
+    </section>
+    <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">CompanyDocumentDatabaseInitializer </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 20px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 20px !important;">
 
-   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        using Microsoft.Data.Sqlite;
+
+                        public static class CompanyDocumentDatabaseInitializer
+                        {
+                            public static async Task InitializeDatabaseAsync(string dbPath)
+                            {
+                                var directory = Path.GetDirectoryName(dbPath);
+
+                                if (!string.IsNullOrEmpty(directory))
+                                {
+                                    Directory.CreateDirectory(directory);
+                                }
+
+                                using var connection = new SqliteConnection($"Data Source={dbPath}");
+                                await connection.OpenAsync();
+
+                                var command = connection.CreateCommand();
+                                command.CommandText = @"
+                                    CREATE TABLE IF NOT EXISTS Documents (
+                                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                        PersonId INTEGER NOT NULL,
+                                        Pesel TEXT NOT NULL,
+                                        DocumentType TEXT NOT NULL,
+                                        DocumentNumber TEXT NOT NULL,
+                                        Title TEXT NOT NULL,
+                                        Description TEXT,
+                                        FilePath TEXT,
+                                        CreatedAt TEXT NOT NULL,
+                                        ModifiedAt TEXT,
+                                        Status TEXT NOT NULL,
+                                        UNIQUE(DocumentNumber)
+                                    );
+
+                                    CREATE INDEX IF NOT EXISTS idx_documents_pesel ON Documents(Pesel);
+                                    CREATE INDEX IF NOT EXISTS idx_documents_personid ON Documents(PersonId);
+                                    CREATE INDEX IF NOT EXISTS idx_documents_docnumber ON Documents(DocumentNumber);
+                                ";
+                                await command.ExecuteNonQueryAsync();
+
+                                // Delete all existing data before seeding
+                                command.CommandText = "DELETE FROM Documents";
+                                await command.ExecuteNonQueryAsync();
+
+                                // Reset autoincrement counter
+                                command.CommandText = "DELETE FROM sqlite_sequence WHERE name='Documents'";
+                                await command.ExecuteNonQueryAsync();
+
+                                // Always seed sample data
+                                await SeedSampleDataAsync(connection);
+                            }
+
+                            private static async Task SeedSampleDataAsync(SqliteConnection connection)
+                            {
+                                var command = connection.CreateCommand();
+                                command.CommandText = @"
+                                INSERT INTO Documents (PersonId, Pesel, DocumentType, DocumentNumber, Title, Description, FilePath, CreatedAt, Status)
+                                VALUES
+                                    -- PersonId 1001
+                                    (1001, '90010112345', 'Invoice', 'INV-0001', 'Invoice for Services', 'Professional services rendered', '/docs/inv001.pdf', '2024-01-15', 'Active'),
+                                    (1001, '90010112345', 'Contract', 'CNT-0001', 'Employment Contract', 'Full-time employment agreement', '/docs/cnt001.pdf', '2024-01-10', 'Active'),
+                                    (1001, '90010112345', 'Receipt', 'RCT-0001', 'Office Supplies Receipt', 'Purchased stationery and printer ink', '/docs/rct001.pdf', '2024-02-05', 'Active'),
+
+                                    -- PersonId 1002
+                                    (1002, '85050567890', 'Invoice', 'INV-0002', 'Product Purchase Invoice', 'Hardware equipment', '/docs/inv002.pdf', '2024-02-20', 'Active'),
+                                    (1002, '85050567890', 'Report', 'RPT-0001', 'Annual Financial Report', 'Year 2023 summary', '/docs/rpt001.pdf', '2024-03-01', 'Active'),
+                                    (1002, '85050567890', 'Agreement', 'AGR-0001', 'NDA with Vendor', 'Non-disclosure agreement for project X', '/docs/agr001.pdf', '2024-03-10', 'Active'),
+                                    (1002, '85050567890', 'License', 'LIC-0001', 'Software License', 'Annual subscription for DesignPro', '/docs/lic001.pdf', '2024-04-15', 'Active'),
+
+                                    -- PersonId 1003
+                                    (1003, '92120398765', 'Certificate', 'CERT-0001', 'Training Certificate', 'Completed professional training', '/docs/cert001.pdf', '2024-03-15', 'Active'),
+                                    (1003, '92120398765', 'Application', 'APP-0001', 'Loan Application', 'Personal loan request', '/docs/app001.pdf', '2024-04-01', 'Pending'),
+                                    (1003, '92120398765', 'Warranty', 'WRR-0001', 'Product Warranty', '2-year warranty for laptop', '/docs/wrr001.pdf', '2024-05-20', 'Active'),
+
+                                    -- PersonId 1004
+                                    (1004, '88071545678', 'Invoice', 'INV-0003', 'Consulting Invoice', 'IT consulting services', '/docs/inv003.pdf', '2024-05-10', 'Active'),
+                                    (1004, '88071545678', 'Proposal', 'PRO-0001', 'Project Proposal', 'Proposal for system upgrade', '/docs/pro001.pdf', '2024-06-05', 'Draft'),
+                                    (1004, '88071545678', 'Certificate', 'CERT-0002', 'Safety Training', 'Workplace safety certification', '/docs/cert002.pdf', '2024-06-15', 'Active'),
+                                    (1004, '88071545678', 'Receipt', 'RCT-0002', 'Travel Expenses', 'Hotel and transport receipts', '/docs/rct002.pdf', '2024-07-01', 'Active'),
+
+                                    -- PersonId 1005
+                                    (1005, '95032012345', 'Contract', 'CNT-0002', 'Freelance Contract', '6-month freelance agreement', '/docs/cnt002.pdf', '2024-07-10', 'Active'),
+                                    (1005, '95032012345', 'Invoice', 'INV-0004', 'Freelance Invoice', 'Monthly services invoice', '/docs/inv004.pdf', '2024-08-01', 'Active'),
+                                    (1005, '95032012345', 'Report', 'RPT-0002', 'Quarterly Report', 'Q2 financial performance', '/docs/rpt002.pdf', '2024-08-15', 'Active'),
+                                    (1005, '95032012345', 'Agreement', 'AGR-0002', 'Partnership Agreement', 'Joint venture with Company Y', '/docs/agr002.pdf', '2024-09-01', 'Active'),
+
+                                    -- PersonId 1006
+                                    (1006, '83112578901', 'Certificate', 'CERT-0003', 'First Aid Certificate', 'First aid training completion', '/docs/cert003.pdf', '2024-09-10', 'Active'),
+                                    (1006, '83112578901', 'Invoice', 'INV-0005', 'Maintenance Invoice', 'Office maintenance services', '/docs/inv005.pdf', '2024-10-05', 'Active'),
+                                    (1006, '83112578901', 'Receipt', 'RCT-0003', 'Office Lunch', 'Team lunch receipt', '/docs/rct003.pdf', '2024-10-15', 'Active'),
+                                    (1006, '83112578901', 'License', 'LIC-0002', 'Cloud Storage License', 'Enterprise cloud storage plan', '/docs/lic002.pdf', '2024-11-01', 'Active'),
+
+                                    -- PersonId 1007
+                                    (1007, '91041834567', 'Application', 'APP-0002', 'Grant Application', 'Research grant proposal', '/docs/app002.pdf', '2024-11-10', 'Pending'),
+                                    (1007, '91041834567', 'Report', 'RPT-0003', 'Research Report', 'Annual research findings', '/docs/rpt003.pdf', '2024-12-01', 'Active'),
+                                    (1007, '91041834567', 'Warranty', 'WRR-0002', 'Equipment Warranty', '3-year warranty for lab equipment', '/docs/wrr002.pdf', '2024-12-15', 'Active'),
+
+                                    -- PersonId 1008
+                                    (1008, '86093078912', 'Proposal', 'PRO-0002', 'Marketing Proposal', 'Digital marketing campaign plan', '/docs/pro002.pdf', '2025-01-10', 'Draft'),
+                                    (1008, '86093078912', 'Invoice', 'INV-0006', 'Advertising Invoice', 'Online ad campaign invoice', '/docs/inv006.pdf', '2025-01-20', 'Active'),
+                                    (1008, '86093078912', 'Certificate', 'CERT-0004', 'Marketing Certification', 'Advanced digital marketing course', '/docs/cert004.pdf', '2025-02-05', 'Active'),
+
+                                    -- PersonId 1009
+                                    (1009, '93062245678', 'Contract', 'CNT-0003', 'Service Contract', 'Annual IT support contract', '/docs/cnt003.pdf', '2025-02-15', 'Active'),
+                                    (1009, '93062245678', 'Agreement', 'AGR-0003', 'Service Level Agreement', 'SLA for IT services', '/docs/agr003.pdf', '2025-03-01', 'Active'),
+                                    (1009, '93062245678', 'Receipt', 'RCT-0004', 'Software Purchase', 'New software licenses', '/docs/rct004.pdf', '2025-03-10', 'Active'),
+
+                                    -- PersonId 1010
+                                    (1010, '89081412345', 'Invoice', 'INV-0007', 'Consulting Invoice', 'Business consulting services', '/docs/inv007.pdf', '2025-04-01', 'Active'),
+                                    (1010, '89081412345', 'Report', 'RPT-0004', 'Audit Report', 'Annual financial audit', '/docs/rpt004.pdf', '2025-04-15', 'Active'),
+                                    (1010, '89081412345', 'License', 'LIC-0003', 'Security Software License', 'Enterprise security suite', '/docs/lic003.pdf', '2025-05-01', 'Active'),
+
+                                    -- PersonId 1011
+                                    (1011, '87021965432', 'Diploma', 'DIP-0001', 'University Diploma', 'Bachelor of Science in Computer Science', '/docs/dip001.pdf', '2025-05-15', 'Active'),
+                                    (1011, '87021965432', 'Resume', 'RES-0001', 'Professional Resume', 'Updated resume for job applications', '/docs/res001.pdf', '2025-05-20', 'Active'),
+                                    (1011, '87021965432', 'Reference', 'REF-0001', 'Employment Reference', 'Reference letter from previous employer', '/docs/ref001.pdf', '2025-05-25', 'Active'),
+
+                                    -- PersonId 1012
+                                    (1012, '94091178901', 'Insurance', 'INS-0001', 'Health Insurance Policy', 'Annual health insurance coverage', '/docs/ins001.pdf', '2025-06-01', 'Active'),
+                                    (1012, '94091178901', 'Claim', 'CLM-0001', 'Insurance Claim', 'Claim for medical expenses', '/docs/clm001.pdf', '2025-06-10', 'Pending'),
+                                    (1012, '94091178901', 'Policy', 'POL-0001', 'Privacy Policy', 'Company privacy policy document', '/docs/pol001.pdf', '2025-06-15', 'Active'),
+
+                                    -- PersonId 1013
+                                    (1013, '82102432165', 'Manual', 'MAN-0001', 'User Manual', 'Software user guide', '/docs/man001.pdf', '2025-07-01', 'Active'),
+                                    (1013, '82102432165', 'Guide', 'GDE-0001', 'Installation Guide', 'Step-by-step installation instructions', '/docs/gde001.pdf', '2025-07-10', 'Active'),
+                                    (1013, '82102432165', 'Form', 'FRM-0001', 'Feedback Form', 'Customer feedback collection form', '/docs/frm001.pdf', '2025-07-15', 'Active'),
+
+                                    -- PersonId 1014
+                                    (1014, '96011745678', 'Transcript', 'TRN-0001', 'Academic Transcript', 'Official university transcript', '/docs/trn001.pdf', '2025-08-01', 'Active'),
+                                    (1014, '96011745678', 'Letter', 'LTR-0001', 'Recommendation Letter', 'Recommendation for graduate school', '/docs/ltr001.pdf', '2025-08-10', 'Active'),
+                                    (1014, '96011745678', 'Statement', 'STM-0001', 'Bank Statement', 'Monthly bank statement', '/docs/stm001.pdf', '2025-08-15', 'Active'),
+
+                                    -- PersonId 1015
+                                    (1015, '84053098765', 'Permit', 'PRM-0001', 'Work Permit', 'Temporary work permit document', '/docs/prm001.pdf', '2025-09-01', 'Active'),
+                                    (1015, '84053098765', 'Ticket', 'TKT-0001', 'Support Ticket', 'IT support request and resolution', '/docs/tkt001.pdf', '2025-09-10', 'Closed'),
+                                    (1015, '84053098765', 'Survey', 'SRV-0001', 'Customer Survey', 'Annual customer satisfaction survey', '/docs/srv001.pdf', '2025-09-15', 'Active'),
+
+                                    -- PersonId 1016
+                                    (1016, '90120532165', 'Memo', 'MEM-0001', 'Internal Memo', 'Company-wide policy update memo', '/docs/mem001.pdf', '2025-10-01', 'Active'),
+                                    (1016, '90120532165', 'Minutes', 'MIN-0001', 'Meeting Minutes', 'Minutes from board meeting', '/docs/min001.pdf', '2025-10-10', 'Active'),
+                                    (1016, '90120532165', 'Newsletter', 'NWS-0001', 'Company Newsletter', 'Monthly internal newsletter', '/docs/nws001.pdf', '2025-10-15', 'Active'),
+
+                                    -- PersonId 1017
+                                    (1017, '81031865432', 'Budget', 'BGT-0001', 'Project Budget', 'Budget proposal for new project', '/docs/bgt001.pdf', '2025-11-01', 'Draft'),
+                                    (1017, '81031865432', 'Schedule', 'SCH-0001', 'Project Schedule', 'Timeline for project delivery', '/docs/sch001.pdf', '2025-11-10', 'Active'),
+                                    (1017, '81031865432', 'Checklist', 'CHK-0001', 'Onboarding Checklist', 'New employee onboarding tasks', '/docs/chk001.pdf', '2025-11-15', 'Active'),
+
+                                    -- PersonId 1018
+                                    (1018, '97072298765', 'Presentation', 'PRE-0001', 'Sales Presentation', 'Quarterly sales performance presentation', '/docs/pre001.pdf', '2025-12-01', 'Active'),
+                                    (1018, '97072298765', 'Brochure', 'BRH-0001', 'Product Brochure', 'Marketing brochure for new product', '/docs/brh001.pdf', '2025-12-10', 'Active'),
+                                    (1018, '97072298765', 'Catalog', 'CTG-0001', 'Product Catalog', 'Updated product catalog for 2026', '/docs/ctg001.pdf', '2025-12-15', 'Active'),
+
+                                    -- PersonId 1019
+                                    (1019, '05280129353', 'Report', 'RPT-0005', 'Financial Report Q1', 'Detailed financial report for Q1 2025', '/docs/rpt005.pdf', '2025-01-15', 'Active'),
+                                    (1019, '05280129353', 'Report', 'RPT-0006', 'Financial Report Q2', 'Detailed financial report for Q2 2025', '/docs/rpt006.pdf', '2025-04-15', 'Active'),
+                                    (1019, '05280129353', 'Report', 'RPT-0007', 'Financial Report Q3', 'Detailed financial report for Q3 2025', '/docs/rpt007.pdf', '2025-07-15', 'Active'),
+                                    (1019, '05280129353', 'Report', 'RPT-0008', 'Financial Report Q4', 'Detailed financial report for Q4 2025', '/docs/rpt008.pdf', '2025-10-15', 'Active'),
+
+                                    -- PersonId 1020
+                                    (1020, '08261437865', 'Invoice', 'INV-0008', 'Invoice January', 'Invoice for January services', '/docs/inv008.pdf', '2025-01-31', 'Active'),
+                                    (1020, '08261437865', 'Invoice', 'INV-0009', 'Invoice February', 'Invoice for February services', '/docs/inv009.pdf', '2025-02-28', 'Active'),
+                                    (1020, '08261437865', 'Invoice', 'INV-0010', 'Invoice March', 'Invoice for March services', '/docs/inv010.pdf', '2025-03-31', 'Active'),
+                                    (1020, '08261437865', 'Invoice', 'INV-0011', 'Invoice April', 'Invoice for April services', '/docs/inv011.pdf', '2025-04-30', 'Active'),
+                                    (1020, '08261437865', 'Invoice', 'INV-0012', 'Invoice May', 'Invoice for May services', '/docs/inv012.pdf', '2025-05-31', 'Active'),
+                                    (1020, '08261437865', 'Invoice', 'INV-0013', 'Invoice June', 'Invoice for June services', '/docs/inv013.pdf', '2025-06-30', 'Active'),
+
+                                    -- PersonId 1021
+                                    (1021, '99010758267', 'Memo', 'MEM-0002', 'HR Memo', 'HR policy update memo', '/docs/mem002.pdf', '2025-01-10', 'Active'),
+                                    (1021, '99010758267', 'Memo', 'MEM-0003', 'Office Memo', 'Office closure announcement', '/docs/mem003.pdf', '2025-05-10', 'Active'),
+                                    (1021, '99010758267', 'Memo', 'MEM-0004', 'Safety Memo', 'Workplace safety updates', '/docs/mem004.pdf', '2025-09-10', 'Active'),
+
+                                    -- PersonId 1022
+                                    (1022, '66112435932', 'Contract', 'CTR-0001', 'Client Contract A', 'Contract agreement with Client A', '/docs/ctr001.pdf', '2025-02-01', 'Active'),
+                                    (1022, '66112435932', 'Contract', 'CTR-0002', 'Client Contract B', 'Contract agreement with Client B', '/docs/ctr002.pdf', '2025-03-01', 'Active'),
+                                    (1022, '66112435932', 'Contract', 'CTR-0003', 'Vendor Contract', 'Contract agreement with Vendor X', '/docs/ctr003.pdf', '2025-06-01', 'Active'),
+
+                                    -- PersonId 1023
+                                    (1023, '84101192381', 'Policy', 'PLC-0001', 'Privacy Policy', 'Updated company privacy policy', '/docs/plc001.pdf', '2025-01-20', 'Active'),
+                                    (1023, '84101192381', 'Policy', 'PLC-0002', 'Security Policy', 'Updated IT security policy', '/docs/plc002.pdf', '2025-04-20', 'Active'),
+                                    (1023, '84101192381', 'Policy', 'PLC-0003', 'Leave Policy', 'Employee leave policy update', '/docs/plc003.pdf', '2025-08-20', 'Active'),
+
+                                    -- PersonId 1024
+                                    (1024, '70032189288', 'Form', 'FRM-0002', 'Leave Application Form', 'Form for applying employee leave', '/docs/frm002.pdf', '2025-01-05', 'Active'),
+                                    (1024, '70032189288', 'Form', 'FRM-0003', 'Expense Form', 'Form for submitting expenses', '/docs/frm003.pdf', '2025-03-05', 'Active'),
+                                    (1024, '70032189288', 'Form', 'FRM-0004', 'Feedback Form', 'Customer feedback submission form', '/docs/frm004.pdf', '2025-06-05', 'Active'),
+
+                                    -- PersonId 1025
+                                    (1025, '77092655919', 'Letter', 'LTR-0002', 'Offer Letter', 'Job offer letter for new hire', '/docs/ltr002.pdf', '2025-02-15', 'Active'),
+                                    (1025, '77092655919', 'Letter', 'LTR-0003', 'Resignation Letter', 'Formal resignation letter', '/docs/ltr003.pdf', '2025-05-15', 'Active'),
+                                    (1025, '77092655919', 'Letter', 'LTR-0004', 'Recommendation Letter', 'Letter of recommendation', '/docs/ltr004.pdf', '2025-09-15', 'Active'),
+
+                                    -- PersonId 1026
+                                    (1026, '76072625775', 'Manual', 'MNL-0001', 'User Manual', 'User manual for product A', '/docs/mnl001.pdf', '2025-02-28', 'Active'),
+                                    (1026, '76072625775', 'Manual', 'MNL-0002', 'Installation Guide', 'Installation manual for product B', '/docs/mnl002.pdf', '2025-06-28', 'Active'),
+                                    (1026, '76072625775', 'Manual', 'MNL-0003', 'Training Manual', 'Internal training documentation', '/docs/mnl003.pdf', '2025-10-28', 'Active');
+                            ";
+                                await command.ExecuteNonQueryAsync();
+                            }
+
+                        }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section> 
+        <section class="slide" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/sqlite.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">CompanyDocument </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 28px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 28px !important;">
+
+                        public partial class CompanyDocument
+                        {
+                            public int Id { get; set; }
+                            public int PersonId { get; set; }
+                            public string Pesel { get; set; } = string.Empty;
+                            public string DocumentType { get; set; } = string.Empty;
+                            public string DocumentNumber { get; set; } = string.Empty;
+                            public string Title { get; set; } = string.Empty;
+                            public string Description { get; set; } = string.Empty;
+                            public string FilePath { get; set; } = string.Empty;
+                            public DateTime CreatedAt { get; set; }
+                            public DateTime? ModifiedAt { get; set; }
+                            public string Status { get; set; } = string.Empty;
+                        }
+
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+    <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">CompanyDocumentsRepository </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 20px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 20px !important;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+                        using MCPServerDocuments.Database;
+                        using MCPServerDocuments.DataClasses;
+                        using Microsoft.Data.Sqlite;
+
+                        namespace MyMPCServer.Database;
+
+                        public class CompanyDocumentsRepository
+                        {
+                            private readonly DatabaseConfig dbConfig;
+
+                            public CompanyDocumentsRepository(DatabaseConfig dbConfig)
+                            {
+                                this.dbConfig = dbConfig;
+                            }
+
+                            public async Task&lt;List&lt;CompanyDocument&gt;&gt; GetDocumentsByPeselAsync(string pesel)
+                            {
+                                var documents = new List&lt;CompanyDocument&gt;();
+
+                                using var connection = new SqliteConnection($&quot;Data Source={dbConfig.ConnectionString}&quot;);
+                                await connection.OpenAsync();
+
+                                var command = connection.CreateCommand();
+                                command.CommandText = @&quot;
+                                    SELECT Id, PersonId, Pesel, DocumentType, DocumentNumber, Title, 
+                                        Description, FilePath, CreatedAt, ModifiedAt, Status
+                                    FROM Documents
+                                    WHERE Pesel = $pesel
+                                    ORDER BY CreatedAt DESC&quot;;
+                                command.Parameters.AddWithValue(&quot;$pesel&quot;, pesel);
+
+                                using var reader = await command.ExecuteReaderAsync();
+                                while (await reader.ReadAsync())
+                                {
+                                    documents.Add(MapDocument(reader));
+                                }
+
+                                return documents;
+                            }
+
+                            public async Task&lt;List&lt;CompanyDocument&gt;&gt; GetDocumentsByPersonIdAsync(int personId)
+                            {
+                                var documents = new List&lt;CompanyDocument&gt;();
+
+                                using var connection = new SqliteConnection($&quot;Data Source={dbConfig.ConnectionString}&quot;);
+                                await connection.OpenAsync();
+
+                                var command = connection.CreateCommand();
+                                command.CommandText = @&quot;
+                                    SELECT Id, PersonId, Pesel, DocumentType, DocumentNumber, Title, 
+                                        Description, FilePath, CreatedAt, ModifiedAt, Status
+                                    FROM Documents
+                                    WHERE PersonId = $personId
+                                    ORDER BY CreatedAt DESC&quot;;
+                                command.Parameters.AddWithValue(&quot;$personId&quot;, personId);
+
+                                using var reader = await command.ExecuteReaderAsync();
+                                while (await reader.ReadAsync())
+                                {
+                                    documents.Add(MapDocument(reader));
+                                }
+
+                                return documents;
+                            }
+
+                            public async Task&lt;int&gt; AddDocumentAsync(CompanyDocument document)
+                            {
+                                using var connection = new SqliteConnection($&quot;Data Source={dbConfig.ConnectionString}&quot;);
+                                await connection.OpenAsync();
+
+                                var command = connection.CreateCommand();
+                                command.CommandText = @&quot;
+                                    INSERT INTO Documents (PersonId, Pesel, DocumentType, DocumentNumber, Title, 
+                                                        Description, FilePath, CreatedAt, Status)
+                                    VALUES ($personId, $pesel, $docType, $docNumber, $title, $description, 
+                                            $filePath, $createdAt, $status);
+                                    SELECT last_insert_rowid();&quot;;
+
+                                command.Parameters.AddWithValue(&quot;$personId&quot;, document.PersonId);
+                                command.Parameters.AddWithValue(&quot;$pesel&quot;, document.Pesel);
+                                command.Parameters.AddWithValue(&quot;$docType&quot;, document.DocumentType);
+                                command.Parameters.AddWithValue(&quot;$docNumber&quot;, document.DocumentNumber);
+                                command.Parameters.AddWithValue(&quot;$title&quot;, document.Title);
+                                command.Parameters.AddWithValue(&quot;$description&quot;, document.Description);
+                                command.Parameters.AddWithValue(&quot;$filePath&quot;, document.FilePath);
+                                command.Parameters.AddWithValue(&quot;$createdAt&quot;, document.CreatedAt);
+                                command.Parameters.AddWithValue(&quot;$status&quot;, document.Status);
+
+                                var result = await command.ExecuteScalarAsync();
+                                return Convert.ToInt32(result);
+                            }
+
+                            private CompanyDocument MapDocument(SqliteDataReader reader)
+                            {
+                                return new CompanyDocument
+                                {
+                                    Id = reader.GetInt32(0),
+                                    PersonId = reader.GetInt32(1),
+                                    Pesel = reader.GetString(2),
+                                    DocumentType = reader.GetString(3),
+                                    DocumentNumber = reader.GetString(4),
+                                    Title = reader.GetString(5),
+                                    Description = reader.GetString(6),
+                                    FilePath = reader.GetString(7),
+                                    CreatedAt = reader.GetDateTime(8),
+                                    ModifiedAt = reader.IsDBNull(9) ? null : reader.GetDateTime(9),
+                                    Status = reader.GetString(10)
+                                };
+                            }
+                        }
+
+
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+
+        <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">DatabaseConfig </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 28px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 28px !important;">
+
+                        public partial class DatabaseConfig
+                        {
+                            public string ConnectionString { get; set; } = string.Empty;
+                        }
+
+
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Zobaczmy jak wygląda nasz MCPServer napisany w C#
+        </span></span>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">MCPServerDataExportTools </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 20px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 20px !important;">
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        [McpServerToolType]
+                        public sealed class MCPServerDataExportTools
+                        {
+                            private readonly CompanyDocumentsRepository _repository;
+
+                            public MCPServerDataExportTools(
+                                CompanyDocumentsRepository repository
+                        )
+                            {
+                                _repository = repository;
+                            }
+
+                            [McpServerTool, Description(&quot;Search for documents by PESEL number.&quot;)]
+                            public async Task&lt;string&gt; SearchDocumentsByPesel(
+                            [Description(&quot;PESEL number to search for&quot;)] string pesel)
+                            {
+                                try
+                                {
+                                    var documents = await _repository.GetDocumentsByPeselAsync(pesel);
+
+                                    return JsonSerializer.Serialize(new SearchDocumentsByPeselResult
+                                    {
+                                        Success = true,
+                                        Message = $&quot;Found {documents.Count} document(s) for PESEL: {pesel}&quot;,
+                                        Pesel = pesel,
+                                        DocumentCount = documents.Count,
+                                        Documents = documents,
+                                        Timestamp = DateTime.UtcNow
+                                    }, CompanyDocumentJsonContext.Default.SearchDocumentsByPeselResult);
+                                }
+                                catch (Exception ex)
+                                {
+                                    return JsonSerializer.Serialize(new
+                                    {
+                                        success = false,
+                                        error = ex.Message,
+                                        timestamp = DateTime.UtcNow
+                                    }, CompanyDocumentJsonContext.Default.SearchDocumentsError);
+                                }
+                            }
+
+                            [McpServerTool, Description(&quot;Search for documents by Person ID.&quot;)]
+                            public async Task&lt;string&gt; SearchDocumentsByPersonId(
+                                [Description(&quot;Person ID to search for&quot;)] int personId)
+                            {
+                                try
+                                {
+                                    var documents = await _repository.GetDocumentsByPersonIdAsync(personId);
+
+                                    return JsonSerializer.Serialize(new SearchDocumentsByPersonIdResult
+                                    {
+                                        Success = true,
+                                        Message = $&quot;Found {documents.Count} document(s) for Person ID: {personId}&quot;,
+                                        PersonId = personId,
+                                        DocumentCount = documents.Count,
+                                        Documents = documents,
+                                        Timestamp = DateTime.UtcNow
+                                    }, CompanyDocumentJsonContext.Default.SearchDocumentsByPersonIdResult);
+                                }
+                                catch (Exception ex)
+                                {
+                                    return JsonSerializer.Serialize(new
+                                    {
+                                        success = false,
+                                        error = ex.Message,
+                                        timestamp = DateTime.UtcNow
+                                    }, CompanyDocumentJsonContext.Default.SearchDocumentsError);
+                                }
+                            }
+                        }
+                                            </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+        <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Klasy do serializacji JSON </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 24px !important;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        // JSON serialization context
+                        [JsonSerializable(typeof(SearchDocumentsByPeselResult))]
+                        [JsonSerializable(typeof(SearchDocumentsError))]
+                        [JsonSerializable(typeof(SearchDocumentsByPersonIdResult))]
+                        public partial class CompanyDocumentJsonContext : JsonSerializerContext
+                        {
+                        }
+
+
+                        public partial class SearchDocumentsByPeselResult
+                        {
+                            public bool Success { get; set; }
+                            public string Message { get; set; } = string.Empty;
+                            public string Pesel { get; set; } = string.Empty;
+                            public int DocumentCount { get; set; }
+                            public List&lt;CompanyDocument&gt; Documents { get; set; } = new();
+                            public DateTime Timestamp { get; set; }
+                        }
+
+                        public partial class SearchDocumentsByPersonIdResult
+                        {
+                            public bool Success { get; set; }
+                            public string Message { get; set; } = string.Empty;
+                            public int PersonId { get; set; }
+                            public int DocumentCount { get; set; }
+                            public List&lt;CompanyDocument&gt; Documents { get; set; } = new();
+                            public DateTime Timestamp { get; set; }
+                        }
+
+                        public partial class SearchDocumentsError
+                        {
+                            public bool Success { get; set; }
+                            public string Error { get; set; } = string.Empty;
+                            public DateTime Timestamp { get; set; }
+                        }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Jak wygląda program.cs w naszym MCPServer?
+        </span></span>
+    </section>
+        <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Klasy do serializacji JSON </h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-cs">
+                    <code style="line-height: 24px !important;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        using MCPServerDocuments;
+                        using MCPServerDocuments.Database;
+                        using Microsoft.Extensions.DependencyInjection;
+                        using Microsoft.Extensions.Hosting;
+                        using MyMPCServer.Database;
+                        using System.Text.Json.Serialization;
+
+                        var builder = Host.CreateEmptyApplicationBuilder(settings: null);
+
+                        builder.Services
+                            .AddMcpServer()
+                            .WithStdioServerTransport()
+                            .WithTools&lt;MCPServerDataExportTools&gt;();
+
+                        builder.Services.AddSingleton&lt;CompanyDocumentsRepository&gt;();
+
+                        var defaultDbPath = Path.Combine(
+                            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+                            &quot;MCPServerDocuments&quot;, 
+                            &quot;documents.db&quot; 
+                        );
+
+                        builder.Services.AddSingleton&lt;DatabaseConfig&gt;(provider =&gt; new DatabaseConfig
+                        {
+                            ConnectionString = Environment.GetEnvironmentVariable(&quot;DB_CONNECTION_STRING&quot;) ?? defaultDbPath
+                        });
+
+                        var dbConfig = builder.Services.BuildServiceProvider().GetRequiredService&lt;DatabaseConfig&gt;();
+
+                        await CompanyDocumentDatabaseInitializer.InitializeDatabaseAsync(dbConfig.ConnectionString);
+
+                        await builder.Build().RunAsync();
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+        <section class="slide gradientorangeblackpurple" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/_dockerMCP.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>Kontenryzacja naszego MCPServer w Dockerze
+        </span></span>
+    </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Jak wyglądają pliki dockera?
+        </span></span>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Docker</h2>
+            </div>
+            <div class="PlaceCodeHere ">
+                <pre style="font-size: 18px;overflow: hidden;  " class="language-dockerfile">
+                    <code style="line-height: 18px !important;">
+
+                        # Use the official .NET SDK image for building
+                        FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+                        WORKDIR /src
+
+                        # Copy project files
+                        COPY *.csproj ./
+                        RUN dotnet restore
+
+                        # Copy remaining source code
+                        COPY . ./
+                        # Publish as self-contained executable for linux-x64
+                        RUN dotnet publish -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o /app/publish
+
+                        # Use minimal runtime image since we have self-contained exe
+                        FROM mcr.microsoft.com/dotnet/runtime-deps:8.0
+                        WORKDIR /app
+
+                        # Copy published app
+                        COPY --from=build /app/publish .
+
+                        # Create directory for database
+                        RUN mkdir -p /data
+
+                        # Set environment variable for database path
+                        ENV DB_CONNECTION_STRING=/data/documents.db
+
+                        # Run the self-contained executable
+                        ENTRYPOINT ["./MCPServerDocuments"]
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">.dockerignore</h2>
+            </div>
+            <div class="PlaceCodeHere ">
+                <pre style="font: size 30px;overflow: hidden;  " class="language-text">
+                    <code style="line-height: 30px !important;">
+                        bin/
+                        obj/
+                        *.db
+                        *.db-shm
+                        *.db-wal
+                        data/
+                        .vs/
+                        .vscode/
+                        *.user
+                        .git/
+                        .gitignore
+                        README.md
+                        Dockerfile
+                        docker-compose.yml
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">docker-compose.yml</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-yml">
+                    <code style="line-height: 24px !important;">
+                        services:
+                        mcp-server-documents:
+                            build:
+                            context: .
+                            dockerfile: Dockerfile
+                            container_name: mcp-server-documents
+                            volumes:
+                            # Persist database outside container
+                            - ./data:/data
+                            # environment:
+                            #   - DB_CONNECTION_STRING=/data/documents.db
+                            stdin_open: true
+                            tty: true
+                            # For MCP servers, we typically don't expose ports since they use stdio
+                            # but you can add network config if needed for future extensions
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Polecenia docker</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-cmd">
+                    <code style="line-height: 24px !important;">
+
+                        cd "to project directory"
+
+                        docker build -t mcp-server-documents:latest .
+
+                        docker run --rm -i -v ${PWD}/data:/data mcp-server-documents:latest
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+                <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Testowanie w MCPInspectorze
+        </span></span>
+    </section>
+                <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/MCPinsperkto-00.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/MCPinsperkto-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/MCPinsperkto-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Zobaczmy jak można podłączyć się do naszego MCPServer z...
+        </span></span>
+    </section>
+                <section class="slide gradientblueblackgreen" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/claude-ai-icon.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>Claude Desktop
+        </span></span>
+    </section>
+        <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/claude-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+            <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/claude-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">mcpServers Claude Desktop</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-json">
+                    <code style="line-height: 24px !important;">
+
+
+
+
+
+                        {
+                            "mcpServers": {
+                                "MCP_DOCKER": {
+                                    "command": "docker",
+                                    "args": ["mcp", "gateway", "run"],
+                                    "env": {
+                                        "LOCALAPPDATA": "C:\\Users\\Cezary\\AppData\\Local",
+                                        "ProgramData": "C:\\ProgramData",
+                                        "ProgramFiles": "C:\\Program Files"
+                                    }
+                                },
+                                "company-documents": {
+                                    "command": "docker",
+                                    "args": [
+                                        "run",
+                                        "--rm",
+                                        "-i",
+                                        "-v",
+                                        "C:\\Users\\Cezary\\mcp-documents-data:/data",
+                                        "mcp-server-documents:latest"
+                                    ]
+                                }
+                            }
+                        }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+                <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/claude-03.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/claude-04.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide claudeBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/claude-05.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+   <section class="slide gradientblueblackgreen" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 60%;top:  40%;"  src="pictures/programs/cursor.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>Cursor
+        </span></span>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Cursor json</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-json">
+                    <code style="line-height: 24px !important;">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        {
+                        "mcpServers": {
+                            "obsidian": {
+                            "command": "docker",
+                            "args": [
+                                "run",
+                                "-i",
+                                "--rm",
+                                "-e",
+                                "OBSIDIAN_HOST",
+                                "-e",
+                                "OBSIDIAN_API_KEY",
+                                "mcp/obsidian"
+                            ],
+                            "env": {
+                                "OBSIDIAN_HOST": "host.docker.internal",
+                                "OBSIDIAN_API_KEY": ""
+                            }
+                            },
+                            "youtube_transcript": {
+                            "command": "docker",
+                            "args": [
+                                "run",
+                                "-i",
+                                "--rm",
+                                "mcp/youtube-transcript"
+                            ]
+                            },
+                            "company-documents": {
+                            "command": "docker",
+                            "args": [
+                                "run",
+                                "-i",
+                                "--rm",
+                                "-v",
+                                "C:\\Users\\Cezary\\mcp-documents-data:/data",
+                                "mcp-server-documents:latest"
+                            ]
+                            }
+                        }
+                    }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-03.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-04.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-05.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide cursorBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/cursor-06.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+    <section class="slide gradientblueblackgreen" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/LLM Studio.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>LLM Studio
+        </span></span>
+    </section>
+               <section class="slide llstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/LLMSTUDIO-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide llstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/LLMSTUDIO-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                   <section class="slide llstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/LLMSTUDIO-03.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">LLM Studio json</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-json">
+                    <code style="line-height: 24px !important;">
+
+
+
+
+
+
+
+
+                        {
+                        "mcpServers": {
+                            "MCP_DOCKER": {
+                            "command": "docker",
+                            "args": [
+                                "mcp",
+                                "gateway",
+                                "run"
+                            ],
+                            "env": {
+                                "LOCALAPPDATA": "C:\\Users\\Cezary\\AppData\\Local",
+                                "ProgramData": "C:\\ProgramData",
+                                "ProgramFiles": "C:\\Program Files"
+                            }
+                            },
+                            "company-documents": {
+                            "command": "docker",
+                            "args": [
+                                "run",
+                                "--rm",
+                                "-i",
+                                "-v",
+                                "C:\\Users\\Cezary\\mcp-documents-data:/data",
+                                "mcp-server-documents:latest"
+                            ]
+                            }
+                        }
+                        }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+                   <section class="slide llstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/LLMSTUDIO-04.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                   <section class="slide llstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/LLMSTUDIO-05.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+               <section class="slide gradientblueblackgreen" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/_Visual Studio CoPilot.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>VS Code i CoPilot
+        </span></span>
+    </section>
+                <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>No to szukamy
+        </span></span>
+    </section>
+                       <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                           <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                           <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-03.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+            <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Nie tędy droga... Visual Studio Code z CoPilotem
+        </span></span>
+    </section>
+                
+                           <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-04.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                           <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-05.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">Polecenia docker</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-json">
+                    <code style="line-height: 24px !important;">
+
+                        {
+                        "servers": {
+                            "github": {
+                            "url": "https://api.githubcopilot.com/mcp/"
+                            },
+                            "company-documents": {
+                            "command": "docker",
+                            "args": [
+                                "run",
+                                "-i",
+                                "--rm",
+                                "-v",
+                                "C:\\Users\\Cezary\\mcp-documents-data:/data",
+                                "mcp-server-documents:latest"
+                            ]
+                            }
+                        },
+                        "inputs": []
+                        }
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+                           <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-06.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                               <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-07.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                               <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-08.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                               <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-09.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                               <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vscod-10.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+           <section class="slide gradientblueblackgreen" style="background-color:black">
+        <figure>
+            <img class="cover " style="height: 50%;top:  45%;"  src="pictures/programs/_Visual Studio Continue.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+        <span class="shout colors" style="position: absolute;  top:  85%;" ><span>VS Code i .Continue
+        </span></span>
+    </section>
+                               <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-01.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                                   <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-02.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Za mało ramu na laptopie
+        </span></span>
+    </section>
+                                   <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-03.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                            <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Nie działa...Nie widzi mojego serwera MCP
+        </span></span>
+    </section>
+                                   <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-04.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+
+                                   <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-05.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                            <section class="slide prism over bhgry">
+        <div class="grid-container">
+            <div class="HeaderTitle GG"> 
+                <h2 class="headerCODE GG">YAML główna konfiguracja Continue</h2>
+            </div>
+            <div class="PlaceCodeHere canscroll">
+                <pre style="font-size: 24px;overflow: hidden;  " class="language-yaml>
+                    <code style="line-height: 24px !important;">
+
+                        name: Local Agent
+                        version: 1.0.0
+                        schema: v1
+                        models:
+                        - name: Autodetect
+                            provider: ollama
+                            model: AUTODETECT
+                        mcpServers:
+                        - name: company-documents
+                            command: docker
+                            args:
+                            - run
+                            - -i
+                            - --rm
+                            - -v
+                            - C:\Users\Cezary\mcp-documents-data:/data
+                            - mcp-server-documents:latest
+                            env: {}
+                    </code>
+                </pre>
+            </div>
+        </div>
+    </section>
+                        <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Nadal nie działa...Nie widzi mojego serwera MCP
+        </span></span>
+    </section>
+                                       <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/programs/ITCrow.jpg" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Po restarcie laptopa zaczął on widzieć mój serwer MCP
+        </span></span>
+    </section>
+                                       <section class="slide visualstudioBackground" style="background-color:black">
+        <figure>
+            <img class="cover" src="pictures/code/vs_continue-06.png" alt="blog">
+            <figcaption class="white">CW</figcaption>
+        </figure>
+    </section>
+                    <section class="slide creamGGGragient  orangetext">
+        <span class="shout colors" ><span>Teraz gdy znamy podstawy możemy rozbudować nasz MCPServer o kolejne funkcjonalności
+        </span></span>
+    </section>
+    <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/connected.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Dostajemy na przykład taką instrukcję od biznesu</li>
+                    <ol class="nonumbers">
+                        <li class="next">Chciałbym przy użyciu LLM pobierać dokumenty na podstawie PESEL albo IdPerson który wpiszę</li>
+                        <li class="next">Chciałbym analizować historię użytkowników którzy wyszukują te dokumenty</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
+        <section class="slide creamGGGragient fullscreen " >
+        <div class="grid-container-slidepoint">
+            <div class="SlidePointImage">
+                <img  src="pictures/iconsFr/contract.png" />
+            </div>
+            <div class="SlidePointText">
+                <ol class="nonumbers">
+                    <li class=" bold">Dostajemy na przykład taką instrukcję od biznesu</li>
+                    <ol class="nonumbers">
+                        <li class="next">Chciałbym też mieć możliwość zapisania tych analiz dokumentów i użytkowników jako plik Excel z wykresami</li>
+                        <li class="next">Chciałbym też mieć możliwość alternatywnie dostać ten plik Excel jako email</li>
+                    </ol>
+                </ol>
+            </div>
+          </div>
+    </section>
 
 
     <!-- <div class="progress"></div> -->
