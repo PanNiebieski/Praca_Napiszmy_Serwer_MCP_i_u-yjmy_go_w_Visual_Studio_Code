@@ -396,6 +396,9 @@ font-size: 40%;
   
 }
 
+
+
+
 .backgroundgrey {
     background: #545454 !important;
 }
@@ -656,7 +659,7 @@ code[class*="language-"], pre[class*="language-"] {
 
   .smallerfont3 {
     font-size: 80% !important;
-    line-height: 120% !important;
+    line-height: 80% !important;
     color: white;
 }
 
