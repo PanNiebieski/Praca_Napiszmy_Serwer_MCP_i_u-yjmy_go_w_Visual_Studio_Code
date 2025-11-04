@@ -81,7 +81,8 @@ border-color: transparent transparent #FF6525;
 }
 
 .slide.creamGrey {
-    background-color:#bdbdbd ;
+    /* background-color:#bdbdbd ; */
+        background-color:#10151B !important; ;
 }
 
 .slide.creamGrey.bbb {
